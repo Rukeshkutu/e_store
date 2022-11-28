@@ -1,19 +1,29 @@
 from django.shortcuts import render, get_object_or_404
-
+from django.core.paginator import Paginator
 # Create your views here.
 from .models import *
 
 def all_products(request):
     products = Product.objects.all() #this query is equivalent in sql as select all products 
-    context = {'products':products}
+    #add paginator in our site
+    paginator = Paginator(products, 3) # Show 25 contacts per page.
 
+    page_number = request.GET.get('page')#get page number from url page
+    page_obj = paginator.get_page(page_number)
+    
+    #here we only add page_obj in the dictionary because we want to only show three product at one page not all product
+    #and have to make changes in the for loop of home.html so instead of all product only three product is shown
+    context = {'page_obj': page_obj}#
+    # context = {'products':products}
     return render(request, 'store/home.html', context)
+    
     #render is used for loading templates/gatheiring of data
     #{products:'products'} is the data we want to display in template
 
 def categories(request):
     return{
-        'categories': Category.objects.all()#if you want to make categories available in every single page then we need to add ''in templates in setting
+        'categories': Category.objects.all()
+        #if you want to make categories available in every single page then we need to add ''store.views.categories''in templates in setting
     }
     
     
@@ -27,6 +37,12 @@ def product_detail(request, slug):
 def category_list(request, categroy_slug):
     category  = get_object_or_404(Category, slug = categroy_slug)#slug for one item form the database
     products = Product.objects.filter(category = category)#this will filter the category of the said product
+    # Show 25 contacts per page.
+    paginator = Paginator(products, 3) 
+    page_number = request.GET.get('page')
+    #get page number from url page
+    page_obj = paginator.get_page(page_number)
     
-    context = {'category': category, 'products':products}
+    
+    context = {'category': category,'page_obj': page_obj}
     return render(request, 'store/category.html', context)
