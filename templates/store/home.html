@@ -10,9 +10,10 @@
   
         <div class="pb-3 h5">All Books</div>
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5 g-3">
+          <a href = "{% url 'store:add-product' %}">Add Product</a>
 
           {% for product in page_obj %}
-  
+
           <div class="col">
             <div class="card shadow-sm">
               <img class="img-fluid" alt="Responsive image" src="{{ product.image.url }}">

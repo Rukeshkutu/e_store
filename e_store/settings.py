@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'store',
+    'store.apps.StoreConfig',
+    'crispy_forms',
+    'crispy_bootstrap5'
     
 ]
 
@@ -127,3 +129,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR/ 'media/'
+
+LOGIN_REDIRECT_URL = '/home'#this redirect the page to home page after logini
+LOGOUT_REDIRECT_URL = '/signin'#This redirect the page to login after logout

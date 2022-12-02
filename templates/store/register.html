@@ -1,0 +1,31 @@
+{% extends 'store/base.html' %}  
+  
+{% block content %}  
+  
+<div class = "login">  
+  
+    {% if messages %}  
+        <ul>   
+            {% for message in messages %}  
+                <li>{{ message }}</li>  
+                {% endfor %}  
+        </ul>   
+    {% endif %}  
+      
+    <h1>Register Here </h1>  
+  
+         <form method="post" >  
+             {% csrf_token %}  
+             <table>  
+                {{ form.as_p }} <!--here as_p adds the paragraph tag and makes the styling little bit better--> 
+                 <tr>  
+                    <td></td>  
+                    <td><input type="submit" name="" value="register" /></td>  
+                </tr>  
+             </table>  
+         </form> 
+         <p>already signed up yet?</p>
+         <a href = "{% url 'store:signin_page' %}" >Login</a>
+     </div>  
+  
+{% endblock content %}  

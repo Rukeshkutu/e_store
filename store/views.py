@@ -1,5 +1,12 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout, forms
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.contrib.auth.forms import UserCreationForm
+
+from .forms import *
 # Create your views here.
 from .models import *
 
@@ -46,3 +53,87 @@ def category_list(request, categroy_slug):
     
     context = {'category': category,'page_obj': page_obj}
     return render(request, 'store/category.html', context)
+
+
+def signin_page(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')#here username should be same as the  "name = 'username '" in signin.html
+        password = request.POST.get('password')
+
+        try:
+            user = User.objects.get(username = username)#'username = username' is to make sure user exite
+            
+        except:
+            messages.error(request, 'user doesnot exit')#flash messages
+            
+        user = authenticate(request, username= username, password = password)# to authenticate and to make sure user is currect
+        if user is not None:
+            login(request, user)
+            return redirect('store:all_products')#when user is login page is redirectd to home.html page through url
+        else:
+            messages.error(request, 'user name or email doesnot exist')
+    
+    context ={
+        
+    }
+    return render(request, 'store/signin.html', context)
+
+def signout_page(request):
+    logout(request)#this delete the token so it delete the user
+    return redirect("store:all_products")
+
+# def signup_page(request):
+#     if request.method == 'POST':
+#         username = request.POST.get('username')
+#         email = request.POST.get('email')
+#         password = request.POST.get('password')
+#         confirm_password = request.POST.get('confirm_password')
+        
+#         if password == confirm_password:
+#             if User.objects.filter(username = username).exists():
+#                 messages.info(request, 'User name already exist')
+#                 return redirect('store:signup_page')
+#             else:
+#                 user = User.objects.create_user(username= username, password = password, email= email)
+#                 user.set_password(password)
+#                 # user.is_staff = True
+#                 user.save()
+#                 messages.info(request, 'success')
+#                 return redirect('store:signin_page')
+#         else:
+#             messages.error(request, "password doesnot match")
+#             return redirect('store:signup_page')
+            
+#     else:
+#         context ={
+            
+#         }
+#         return render(request, 'store/signup.html', context)
+
+
+def register_page(request):  
+    if request.POST == 'POST':  
+        form = CustomUserCreationForm()  
+        if form.is_valid():  
+            form.save()  
+    else:  
+        form = CustomUserCreationForm()  
+    context = {  
+        'form':form  
+    }  
+    return render(request, 'store/register.html', context)
+
+
+def createProduct(request):
+    form = ProductForm()#improt productform form form.py
+    if request.method == 'POST':
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('store:all_products')
+    
+    context = {
+        'form':form
+    }
+    return render(request, 'store/createproduct.html', context)
+
