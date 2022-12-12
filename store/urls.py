@@ -10,10 +10,9 @@ urlpatterns = [
 #     #here slug refer to the data and category_slug is respointpoint for that data
     path('search/<slug:categroy_slug>/',views.category_list, name = 'category_list' ),
     #this url is used to view only user selected category product
-   
-    # path('login/', views.signin_page, name = 'signin_page'),
-    # path('logout/', views.signout_page, name = 'signout_page'),
-    # path('register/',views.register_page, name= 'register'),
+    
+    path('delete-item/<str:pk>/', views.delete_items, name = 'delete-item'),
+    path('edit-item/<str:pk>/', views.edit_item, name = 'edit-item'),
     
     path('add-product/', views.createProduct, name = 'add-product'),
     

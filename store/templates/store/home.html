@@ -16,6 +16,11 @@
 
           <div class="col">
             <div class="card shadow-sm">
+              {% comment %} {% if request.user == item.created_by %}<!--hide the button from the post when we are not login--> {% endcomment %}
+                <a href="{% url 'store:edit-item' product.id%} ">Edit</a>
+                <a href="{% url 'store:delete-item' product.id%}">Delete</a> 
+              {% comment %} {% endif %} {% endcomment %}
+
               <img class="img-fluid" alt="Responsive image" src="{{ product.image.url}}">
               <div class="card-body">
                 <p class="card-text">
