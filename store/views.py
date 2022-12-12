@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404,redirect
 from django.core.paginator import Paginator
 from django.contrib import messages
 from .forms import *
+import os
 # # Create your views here.
 from .models import *
 
@@ -69,3 +70,33 @@ def createProduct(request):
     }
     return render(request, 'store/createproduct.html', context)
 
+def delete_items(request, pk):
+    item = Product.objects.get(id = pk)
+    
+    # if request. != item.created_by:
+    #     messages.INFO(request, 'You are not authorized')
+    
+    if request.method == 'POST':
+        item.delete()
+        return redirect('store:items')
+
+    context = {
+        'item':item
+    }
+    return render(request, 'store/delete.html', context)
+# @login_required  
+
+
+def edit_item(request, pk):
+    item = Product.objects.get(id = pk) # we need to pass id in the url for edit in createproduct.html
+    form = ProductForm(instance= item) 
+    if request.method == 'POST':
+        if len(request.FILES) != 0:
+            if len(item.image) > 0:
+                os.remove(item.image.path)
+            item.image = request.FILES['image']
+        form.save()
+        return redirect('store:items')
+        messages.success(request, 'Item updated successfully')
+    context = {'form':form}
+    return render(request, 'store/createproduct.html', context)
