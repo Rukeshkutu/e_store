@@ -36,8 +36,11 @@
                                 </select>
 
                             </div>
-                            <div class="col-6 text-end"><button type="button" class="btn btn-secondary btn-sm">Add to
-                                    basket</button></div>
+                            <div class="col-6 text-end">
+                                <button data-product = "{{product.id}}" data-action = "add" type="button" class="btn btn-secondary btn-sm add-btn update-cart ">
+                                    Add to basket <!--'data-action = "add"' for when we click the button product is added to the cart  -->
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
