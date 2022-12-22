@@ -3,7 +3,7 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from .utils import cartData, cookieCart
 from django.http import JsonResponse
-import json
+import json, datetime
 from .forms import *
 import os
 # # Create your views here.
@@ -17,9 +17,11 @@ def items(request):
         cartItems = order.get_cart_items
     
     else:
+    #     # return redirect('store:items')
         items =[]
         order = {'get_cart_total': 0, 'get_cart_items':0 }
         cartItems = order['get_cart_items']
+    #     # messages.info(request, 'message is message')
         
     products = Product.objects.all() #this query is equivalent in sql as select all products 
     #add paginator in our site
@@ -45,9 +47,20 @@ def categories(request):
     
 #item_info is for the detail information of the product   
 def item_info(request, slug):
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer = customer, complete = False)
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
+        
+    else:
+        items =[]
+        order = {'get_cart_total': 0, 'get_cart_items':0 }
+        cartItems = order['get_cart_items']
+        
     product = get_object_or_404(Product, slug = slug, in_stock = True)
     
-    context = {'product':product}
+    context = {'product':product, 'cartItems': cartItems}
     return render(request, 'store/detail.html', context)
 
 
@@ -129,9 +142,10 @@ def cart(request):
         cartItems = order.get_cart_items
     
     else:
-        items =[]
-        order = {'get_cart_total': 0, 'get_cart_items':0 }
-        cartItems = order['get_cart_items']
+        return redirect('signin_page')
+    #     items =[]
+    #     order = {'get_cart_total': 0, 'get_cart_items':0 }
+    #     cartItems = order['get_cart_items']
         
      
     products = Product.objects.all()
@@ -152,9 +166,10 @@ def checkout(request):
         cartItems = order.get_cart_items
     
     else:
-        items =[]
-        order = {'get_cart_total': 0, 'get_cart_items':0 }
-        cartItems = order['get_cart_items']
+        return redirect('signin_page')
+    #     items =[]
+    #     order = {'get_cart_total': 0, 'get_cart_items':0 }
+    #     cartItems = order['get_cart_items']
      
     context = {'items': items, 'order':order, 'cartItems':cartItems}
     return render(request, 'store/checkout.html', context)
@@ -188,31 +203,31 @@ def updateItem(request):
         orderItem.delete()
     return JsonResponse('item was added', safe = False)
 
+#for payment process
+def processOrder(request):
+    transaction_id = datetime.datetime.now().timestamp()
+    data = json.loads(request.body)
 
-# def processOrder(request):
-#      transaction_id = datetime.datetime.now().timestamp()
-#      data = json.loads(request.body)
-	
-#      if request.user.is_authenticated:     
-#           customer = request.user.customer	
-#           order, created = Order.objects.get_or_create(customer=customer, complete=False)
-          
-#      else:	
-#      	customer, order = guestOrder(request, data)
+    if request.user.is_authenticated:     
+        customer = request.user.customer	
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        
+    else:	
+        customer, order = guestOrder(request, data)
 
-#      total = float(data['form']['total'])
-#      order.transaction_id = transaction_id
+    total = float(data['form']['total'])#here form and total is taken from checkout.html line 151 for form and 118 for total
+    order.transaction_id = transaction_id
 
-#      if total == float(order.get_cart_total):
-#           order.complete = True
-#      order.save()
+    if total == float(order.get_cart_total):
+        order.complete = True
+        order.save()
      
-#      if order.shipping == True:     
-#           ShippingAddress.objects.create(	
-#                customer=customer,	    
-#                order=order,	
-#                address=data['shipping']['address'],	
-#                city=data['shipping']['city'],	
-#                state=data['shipping']['state'],	
-#                zipcode=data['shipping']['zipcode'],	
-#           )      
+    if order.shipping == True:     
+        ShippingAddress.objects.create(	
+            customer=customer,	    
+            order=order,	
+            address=data['shipping']['address'],	
+            city=data['shipping']['city'],	
+            state=data['shipping']['state'],	
+            zipcode=data['shipping']['zipcode'],	
+        )      
