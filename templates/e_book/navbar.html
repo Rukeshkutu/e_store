@@ -46,8 +46,9 @@
 
             </ul>
             <a href="{% url 'store:cart' %}">
-              <img  id="cart-icon" src="{% static 'pic/cart.png' %}" width="20px">
+              <img  id="cart-icon" src="{% static 'pic/cart.png' %}" >
             </a>
+            <p id="cart-total" >{{cartItems}}</p>
             <ul>
 
               {% if request.user.is_authenticated%}

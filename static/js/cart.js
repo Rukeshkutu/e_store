@@ -1,3 +1,6 @@
+
+
+
 //we create event handler for the each button ussing'update-cart'
 //we first we query all the item in that class
 var updateBtns = document.getElementsByClassName('update-cart')
