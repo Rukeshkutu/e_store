@@ -1,20 +1,30 @@
 {% extends "e_book/base.html"%}
 
 {%load static%}
-{% block title%}Home{%endblock%}
+{% block title%}Search Result{%endblock%}
 
 {%block content%}
 <main>
     <div class="album py-5 bg-light">
       <div class="container">
   
-        <div class="pb-3 h5">All Books
-          <a href = "{% url 'store:add-product'%}">Add Product</a>
-        </div>
-        
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5 g-3">
-          
+        <div class="pb-3 h5">Search Results: </div>
 
+        {% if product|length < 1%}
+                <p>No Search result found.<br>
+                your search: <b>{{queries}}</b> did not match any document<br>
+                Suggestions:<br>
+                <ul>
+                    <li>Try different keywords.</li>
+                    <li>Make sure that all words are spel correctly</li>
+                    <li>Try more greneral keywords.</li>
+                    <li>Try fewer keywords</li>
+                </ul>
+            </p>
+            {%endif%}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5 g-3">
+        
+            
           {% for product in page_obj %}
 
           <div class="col">

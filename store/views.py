@@ -1,15 +1,18 @@
-from django.shortcuts import render, get_object_or_404,redirect
+from django.shortcuts import render, get_object_or_404,redirect, HttpResponse
 from django.core.paginator import Paginator
 from django.contrib import messages
 from .utils import cartData, cookieCart
 from django.http import JsonResponse
 import json, datetime
+from django.db.models import Q
 from .forms import *
 import os
 # # Create your views here.
 from .models import *
 
 def items(request):
+    
+        
     if request.user.is_authenticated:
         customer = request.user.customer
         order, created = Order.objects.get_or_create(customer = customer, complete = False)
@@ -22,7 +25,14 @@ def items(request):
         order = {'get_cart_total': 0, 'get_cart_items':0 }
         cartItems = order['get_cart_items']
     #     # messages.info(request, 'message is message')
+    # if 'search' in request.GET:
+    #     search = request.GET['search']
+    #     multiple_search = Q(Q(title__icontains= search )| Q( category__icontains = search))
+    #     products = Product.objects.filter(multiple_search)
         
+    # else:
+    #     products = Product.objects.all()
+          
     products = Product.objects.all() #this query is equivalent in sql as select all products 
     #add paginator in our site
     paginator = Paginator(products, 3) # Show 25 contacts per page.
@@ -45,6 +55,30 @@ def categories(request):
         #if you want to make categories available in every single page then we need to add ''store.views.categories''in templates in setting
     }
     
+
+def search(request):
+    queries = request.GET.get('query', False)# here 'query' is from 'name= query' in navbar
+    
+    #here if search query has length more than 50 letter serach algorithem doesnot run and shows the result of query doesnot fond
+    if len(queries) > 50:
+        product = Product.objects.none()#empty query set
+    else:
+        product = Product.objects.filter(title__icontains = queries)
+    
+    #this show the erro message if search result not fund
+    if product.count() == 0:
+        messages.warning(request, 'Search result not found.Please search again.')
+    
+    paginator = Paginator(product, 3) # Show 25 contacts per page.
+
+    page_number = request.GET.get('page')#get page number from url page
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'page_obj':page_obj,
+        'queries':queries 
+    }
+    return render(request, 'store/search.html', context)
+        
 #item_info is for the detail information of the product   
 def item_info(request, slug):
     if request.user.is_authenticated:

@@ -15,6 +15,7 @@ urlpatterns = [
     path('edit-item/<str:pk>/', views.edit_item, name = 'edit-item'),
     
     path('add-product/', views.createProduct, name = 'add-product'),
+    path('search/',views.search, name = "search"),
     
     #for cart
     path('update_item/', views.updateItem, name = "update_item"),
