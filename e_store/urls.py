@@ -23,13 +23,11 @@ from auth_users import views as auth_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include('store.urls', namespace='store')),
-    
-    path('login/',auth_views.signin_page, name = 'signin_page'),
-    path('logout/', auth_views.signout_page, name = 'signout_page'),
-    path('register/', auth_views.register_page, name = 'register')
+    path('auth/', include('auth_users.urls')),
+
     # path('', include('django.contrib.auth.urls'))
     
-]
+]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

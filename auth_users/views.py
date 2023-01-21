@@ -2,8 +2,27 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from .forms import *
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
+def admin_dashboard(request):
+    return render(request, 'auth_users/admin_dashboard.html')
+
+def staff_dashboard(request):
+    return render(request, 'auth_users/staff_dashboard.html')
+
+def user_dashboard(request):
+    return render(request, 'auth_users/user_dashboard.html')
+@csrf_exempt()
+def dashboard(request):
+    if request.user.is_superuser:
+        return redirect('auth_users:admin_dashboard')
+    elif request.user.is_staff:
+        return redirect('auth_users:staff_dashboard')
+    else:
+        return redirect('auth_users:user_dashboard')
+    
+    
 def signin_page(request):
     if request.method == 'POST':
         username = request.POST.get('username')#here username should be same as the  "name = 'username '" in signin.html
@@ -18,7 +37,10 @@ def signin_page(request):
         user = authenticate(request, username= username, password = password)# to authenticate and to make sure user is currect
         if user is not None:
             login(request, user)
-            return redirect('store:items')#when user is login page is redirectd to home.html page through url
+            if request.user.is_superuser:
+                return redirect('auth_users:dashboard')
+            else:
+                return redirect('store:items')#when user is login page is redirectd to home.html page through url
         else:
             messages.error(request, 'user name or email doesnot exist')
     
