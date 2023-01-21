@@ -5,6 +5,7 @@ from .forms import *
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import requires_csrf_token
 
+
 # Create your views here.
 def admin_dashboard(request):
     return render(request, 'auth_users/admin_dashboard.html')
@@ -28,14 +29,16 @@ def dashboard(request):
     
 def signin_page(request):
     if request.method == 'POST':
-        username = request.POST.get('username')#here username should be same as the  "name = 'username '" in signin.html
+        #username and password is taken from signin.html "name = username"
+        username = request.POST.get('username')
         password = request.POST.get('password')
 
         try:
-            user = User.objects.get(username = username)#'username = username' is to make sure user exite
+            # to make sure user exits
+            user = User.objects.get(username = username)
             
         except:
-            messages.error(request, 'user doesnot exit')#flash messages
+            messages.error(request, 'user doesnot exit')
             
         user = authenticate(request, username= username, password = password)# to authenticate and to make sure user is currect
         if user is not None:
@@ -43,7 +46,7 @@ def signin_page(request):
             if request.user.is_superuser:
                 return redirect('auth_users:dashboard')
             else:
-                return redirect('store:items')#when user is login page is redirectd to home.html page through url
+                return redirect('store:items')
         else:
             messages.error(request, 'user name or email doesnot exist')
     
