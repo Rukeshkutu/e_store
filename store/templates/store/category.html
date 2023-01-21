@@ -4,6 +4,7 @@
 {% block title%}Home{%endblock%}
 
 {%block content%}
+
 <main>
     <div class="album py-5 bg-light">
       <div class="container">
@@ -36,24 +37,7 @@
 </main>
 
 <!--page number-->
-<nav aria-label="...">
-  <ul class="pagination ">
-    {% if page_obj.has_previous %}
-    <li class="page-item ">
-      <a class="page-link" href="?page={{page_obj.previous_page_number}}" tabindex="-1">Previous</a>
-    </li>
-    {% endif %}
 
-    <li class="page-item"><a class="page-link" href="">Page: {{ page_obj.number }}</a></li>
-    
-    {% if page_obj.has_next %}
-    <li class="page-item">
-      <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
-      <!-- <a class="page-link" href="?page={{ page_obj.paginator.num_page }}">Last &raquo;</a> -->
-    </li>
-    {%endif%}
-  </ul>
-</nav>
-
+{% include "./pagnination.html"%}
   
 {%endblock%} 
