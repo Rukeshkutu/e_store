@@ -5,6 +5,7 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from .utils import cartData, cookieCart
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 from django.core.files.storage import default_storage
 import json, datetime
 from django.db.models import Q
@@ -21,58 +22,44 @@ def items(request):
         cartItems = order.get_cart_items
     
     else:
-    #     # return redirect('store:items')
         items =[]
         order = {'get_cart_total': 0, 'get_cart_items':0 }
         cartItems = order['get_cart_items']
-    #     # messages.info(request, 'message is message')
-    # if 'search' in request.GET:
-    #     search = request.GET['search']
-    #     multiple_search = Q(Q(title__icontains= search )| Q( category__icontains = search))
-    #     products = Product.objects.filter(multiple_search)
         
-    # else:
-    #     products = Product.objects.all()
-          
-    products = Product.objects.all() #this query is equivalent in sql as select all products 
-    #add paginator in our site
-    paginator = Paginator(products, 3) # Show 25 contacts per page.
+    products = Product.objects.all()
+    
+    #To show items per page
+    paginator = Paginator(products, 3) # 
 
     page_number = request.GET.get('page')#get page number from url page
     page_obj = paginator.get_page(page_number)
-    
-    #here we only add page_obj in the dictionary because we want to only show three product at one page not all product
-    #and have to make changes in the for loop of home.html so instead of all product only three product is shown
     context = {'page_obj': page_obj, 'cartItems':cartItems}#
     # context = {'products':products}
     return render(request, 'store/home.html', context)
     
-#     #render is used for loading templates/gatheiring of data
-#     #{products:'products'} is the data we want to display in template
-
+    
 def categories(request):
     return{
         'categories': Category.objects.all()
-        #if you want to make categories available in every single page then we need to add ''store.views.categories''in templates in setting
     }
     
 
 def search(request):
-    queries = request.GET.get('query', False)# here 'query' is from 'name= query' in navbar
+    #query' is from navbar.html line 42
+    queries = request.GET.get('query', False)
     
-    #here if search query has length more than 50 letter serach algorithem doesnot run and shows the result of query doesnot fond
     if len(queries) > 50:
-        product = Product.objects.none()#empty query set
+        product = Product.objects.none()
     else:
         product = Product.objects.filter(title__icontains = queries)
     
-    #this show the erro message if search result not fund
+    
     if product.count() == 0:
         messages.warning(request, 'Search result not found.Please search again.')
     
-    paginator = Paginator(product, 3) # Show 25 contacts per page.
+    paginator = Paginator(product, 3) 
 
-    page_number = request.GET.get('page')#get page number from url page
+    page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {
         'page_obj':page_obj,
@@ -80,8 +67,8 @@ def search(request):
     }
     return render(request, 'store/search.html', context)
         
-#item_info is for the detail information of the product   
-def item_info(request, slug):
+        
+def item_detail(request, slug):
     if request.user.is_authenticated:
         customer = request.user.customer
         order, created = Order.objects.get_or_create(customer = customer, complete = False)
@@ -100,23 +87,23 @@ def item_info(request, slug):
 
 
 def category_list(request, categroy_slug):
-    category  = get_object_or_404(Category, slug = categroy_slug)#slug for one item form the database
-    products = Product.objects.filter(category = category)#this will filter the category of the said product
-    # Show 25 contacts per page.
+    category  = get_object_or_404(Category, slug = categroy_slug)
+    products = Product.objects.filter(category = category)
+   
     paginator = Paginator(products, 3) 
     page_number = request.GET.get('page')
-    #get page number from url page
     page_obj = paginator.get_page(page_number)
     
     
     context = {'category': category,'page_obj': page_obj}
     return render(request, 'store/category.html', context)
 
-
-def createProduct(request,pk=None):
-    form = ProductForm()#improt productform form form.py
+@login_required
+def addProduct(request,pk=None):
+    #from form.py
+    form = ProductForm()
     if request.method == 'POST':
-        form = ProductForm(request.POST,request.FILES)#request.File send request to the file to be uploaded to uploade the file, without it there would be error while saving file
+        form = ProductForm(request.POST, request.FILES)
         print(form)
         if form.is_valid():
             review = form.save(commit=False)
@@ -131,11 +118,9 @@ def createProduct(request,pk=None):
     }
     return render(request, 'store/createproduct.html', context)
 
+@login_required
 def delete_items(request, pk):
     item = Product.objects.get(id = pk)
-    
-    # if request. != item.created_by:
-    #     messages.INFO(request, 'You are not authorized')
     
     if request.method == 'POST':
         item.delete()
@@ -145,11 +130,11 @@ def delete_items(request, pk):
         'item':item
     }
     return render(request, 'store/delete.html', context)
-# @login_required  
+ 
 
-# to edit or update the product content such as phot ,description, pice etc
+@login_required
 def edit_item(request, pk):
-    item = Product.objects.get(id = pk) # we need to pass id in the url for edit in createproduct.html
+    item = Product.objects.get(id = pk)
     form = ProductForm( request.POST or None, request.FILES or None, instance = item)
     if request.method == 'POST':
         if form.is_valid():
@@ -171,48 +156,34 @@ def edit_item(request, pk):
     context = {'form':form}
     return render(request, 'store/createproduct.html', context)
 
-
+@login_required
 def cart(request):
-    #  data = cartData(request)#shows the number of item in the cart 
-    #  cartItems = data['cartItems']
-    #  order = data['order']
-    #  items = data['items']
-
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer = customer, complete = False)
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
+    # if request.user.is_authenticated:
+    customer = request.user.customer
+    order, created = Order.objects.get_or_create(customer = customer, complete = False)
+    items = order.orderitem_set.all()
+    cartItems = order.get_cart_items
     
-    else:
+    if request.user.is_authenticated is None:
         return redirect('auth_users:signin_page')
-    #     items =[]
-    #     order = {'get_cart_total': 0, 'get_cart_items':0 }
-    #     cartItems = order['get_cart_items']
-        
+    
+    # else:
+    #     return redirect('auth_users:signin_page')
      
     products = Product.objects.all()
     context = {'items': items, 'order':order, 'cartItems': cartItems}
     return render(request, 'store/cart.html', context)
 
+@login_required
 def checkout(request):
-     
-    #  data = cartData(request)#shows the number of item in the cart 
-    #  cartItems = data['cartItems']
-    #  order = data['order']
-    #  items = data['items']
+    # if request.user.is_authenticated:
+    customer = request.user.customer
+    order, created = Order.objects.get_or_create(customer = customer, complete = False)
+    items = order.orderitem_set.all()
+    cartItems = order.get_cart_items
 
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer = customer, complete = False)
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
-    
-    else:
-        return redirect('signin_page')
-    #     items =[]
-    #     order = {'get_cart_total': 0, 'get_cart_items':0 }
-    #     cartItems = order['get_cart_items']
+    # else:
+    #     return redirect('signin_page')
      
     context = {'items': items, 'order':order, 'cartItems':cartItems}
     return render(request, 'store/checkout.html', context)
