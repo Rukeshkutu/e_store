@@ -1,4 +1,4 @@
-{% extends "e_book/base.html"%}
+{% extends "base.html"%}
 
 {%load static%}
 {% block title%}Search Result{%endblock%}
@@ -11,17 +11,17 @@
         <div class="pb-3 h5">Search Results: </div>
 
         {% if product|length < 1%}
-                <p>No Search result found.<br>
-                your search: <b>{{queries}}</b> did not match any document<br>
-                Suggestions:<br>
-                <ul>
-                    <li>Try different keywords.</li>
-                    <li>Make sure that all words are spel correctly</li>
-                    <li>Try more greneral keywords.</li>
-                    <li>Try fewer keywords</li>
-                </ul>
-            </p>
-            {%endif%}
+          <p>No Search result found.<br>
+            your search: <b>{{queries}}</b> did not match any document<br>
+            Suggestions:<br>
+            <ul>
+                <li>Try different keywords.</li>
+                <li>Make sure that all words are spel correctly</li>
+                <li>Try more greneral keywords.</li>
+                <li>Try fewer keywords</li>
+            </ul>
+          </p>
+        {% endif %}
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5 g-3">
         
             

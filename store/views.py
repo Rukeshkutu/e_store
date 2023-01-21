@@ -1,8 +1,11 @@
 from django.shortcuts import render, get_object_or_404,redirect, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+
 from django.core.paginator import Paginator
 from django.contrib import messages
 from .utils import cartData, cookieCart
 from django.http import JsonResponse
+from django.core.files.storage import default_storage
 import json, datetime
 from django.db.models import Q
 from .forms import *
@@ -10,9 +13,7 @@ import os
 # # Create your views here.
 from .models import *
 
-def items(request):
-    
-        
+def items(request): 
     if request.user.is_authenticated:
         customer = request.user.customer
         order, created = Order.objects.get_or_create(customer = customer, complete = False)
@@ -112,7 +113,7 @@ def category_list(request, categroy_slug):
     return render(request, 'store/category.html', context)
 
 
-def createProduct(request):
+def createProduct(request,pk=None):
     form = ProductForm()#improt productform form form.py
     if request.method == 'POST':
         form = ProductForm(request.POST,request.FILES)#request.File send request to the file to be uploaded to uploade the file, without it there would be error while saving file
@@ -146,19 +147,27 @@ def delete_items(request, pk):
     return render(request, 'store/delete.html', context)
 # @login_required  
 
-
+# to edit or update the product content such as phot ,description, pice etc
 def edit_item(request, pk):
     item = Product.objects.get(id = pk) # we need to pass id in the url for edit in createproduct.html
-    form = ProductForm(instance= item) 
-    if request.method == 'POST'and form.is_valid():
-        if len(request.FILES) != 0:
-            if len(item.image) > 0:
-                os.remove(item.image.path)
-            item.image = request.FILES['image']
-        form.save()
-        return form.cleaned_data
-        return redirect('store:items')
-        messages.success(request, 'Item updated successfully')
+    form = ProductForm( request.POST or None, request.FILES or None, instance = item)
+    if request.method == 'POST':
+        if form.is_valid():
+            old_image = item.image
+            item = form.save()
+            if item.image != old_image:
+                default_storage.delete(old_image.path)
+            # form.save()
+            return redirect('store:items')
+    # if request.method == 'POST'and form.is_valid():
+    #     if len(request.FILES) != 0:
+    #         if len(item.image) > 0:
+    #             os.remove(item.image.path)
+    #         item.image = request.FILES['image']
+    #     form.save()
+    #     return form.cleaned_data
+    #     # return redirect('store:items')
+    #     messages.success(request, 'Item updated successfully')
     context = {'form':form}
     return render(request, 'store/createproduct.html', context)
 
@@ -176,7 +185,7 @@ def cart(request):
         cartItems = order.get_cart_items
     
     else:
-        return redirect('signin_page')
+        return redirect('auth_users:signin_page')
     #     items =[]
     #     order = {'get_cart_total': 0, 'get_cart_items':0 }
     #     cartItems = order['get_cart_items']
@@ -212,6 +221,7 @@ def checkout(request):
 
 # from django.views.decorators.csrf import csrf_exempt
 # @csrf_exempt
+#for cart
 def updateItem(request):
     data = json.loads(request.body)# to add data we import jason we gone a parse a data in request.body
     productId = data['productId']#get some value from actiona and priductid from cart.js
