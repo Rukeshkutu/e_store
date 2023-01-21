@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from .forms import *
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import requires_csrf_token
 
 # Create your views here.
 def admin_dashboard(request):
@@ -13,7 +14,9 @@ def staff_dashboard(request):
 
 def user_dashboard(request):
     return render(request, 'auth_users/user_dashboard.html')
-@csrf_exempt()
+
+
+@requires_csrf_token
 def dashboard(request):
     if request.user.is_superuser:
         return redirect('auth_users:admin_dashboard')
