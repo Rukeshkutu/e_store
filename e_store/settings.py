@@ -138,3 +138,5 @@ MEDIA_ROOT = BASE_DIR/ 'media/'
 
 LOGIN_REDIRECT_URL = '/home'#this redirect the page to home page after logini
 LOGOUT_REDIRECT_URL = '/signin'#This redirect the page to login after logout
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
