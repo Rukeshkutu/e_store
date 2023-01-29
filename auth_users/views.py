@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+
 from .forms import *
+from .models import *
+
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import requires_csrf_token
-
+from django.contrib.auth.decorators import login_required
 #forgot password
 from django.core.mail import send_mail, BadHeaderError
 from django.contrib.auth.forms import PasswordResetForm
@@ -71,6 +74,44 @@ def signout_page(request):
     logout(request)#this delete the token so it delete the user
     return redirect("store:items")
 
+
+@login_required(login_url='auth_users:signin')
+def profile(request):
+    user_profile = Profile.objects.all()
+    context = {
+        'user_profile':user_profile,
+    }
+    
+    return render(request, 'auth_users/profile.html', context)
+
+
+def edit_profile_image(request):
+    if request.method == 'POST':
+        form = ProfileImageForm(request.POST, request.FILES, instance=request.user.profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Your profile image has been updated!')
+            return redirect('auth_users:profile')
+    else:
+        form = ProfileImageForm(instance=request.user.profile)
+        
+    return render(request, 'auth_users/edit_profile_image.html', {'form': form})
+
+def edit_profile_detail(request):
+    if request.method == 'POST':
+        form = ProfileWithoutImageForm(request.POST, request.FILES, instance=request.user.profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Your profile image has been updated!')
+            return redirect('auth_users:profile')
+    else:
+        form = ProfileWithoutImageForm(instance=request.user.profile)
+        
+    return render(request, 'auth_users/edit_profile.html', {'form': form})
+
+
+
+
 def register_page(request):  
     if request.method == 'POST':
         form = SignUpForm(request.POST)
@@ -81,7 +122,7 @@ def register_page(request):
             user = authenticate(username=username, password=raw_password)
             login(request, user)
             messages.success(request, 'user created successfully')
-            return redirect('signin_page')
+            return redirect('auth_users:signin_page')
     else:
         form = SignUpForm()
         
